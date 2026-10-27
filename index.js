@@ -60,3 +60,45 @@ const idSchema = Joi.object({
     id: Joi.number().integer().positive().required(),
 })
 
+//middleware untuk validasi body
+function validateBody(schema) {
+    return (req, res, next) => {
+        const { error, value } = schema.validate(req.body,{
+            abortEarly: false, convert: true, allowUnknown: false
+        });
+        if (error) {
+            return errorResponse(
+                res,
+                'Validasi Input Gagal', 
+                400,
+                error.details.map(item => ({
+                    field: item.path.join('.'),
+                    message: item.message,
+                }))
+            )    
+        }
+        req.body = value
+        next()
+    }
+}
+
+//middleware untuk validasi parameter ID
+function validateParams(schema) {
+    return (req, res, next) => {
+        const { error, value } = schema.validate(req.params);
+        if (error) {
+            return errorResponse(
+                res,
+                'Parameter Tidak Valid', 
+                400,
+                error.details.map(item => ({
+                    field: item.path.join('.'),
+                    message: item.message,
+                }))
+            )    
+        }
+        req.params = value
+        next()
+    }
+}
+
